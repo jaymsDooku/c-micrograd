@@ -5,14 +5,38 @@
 #include "variable.h"
 
 #include "grad_function.h"
+#include "data_structures/list.h"
+#include "data_structures/set.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 
+void variable_build_topo(variable* variable, list* topo, set* visited) {
+    if (variable == NULL) {
+        return;
+    }
+
+    if (!set_contains(visited, variable)) {
+        set_add(visited, variable);
+        variable_build_topo(variable->children[0], topo, visited);
+        variable_build_topo(variable->children[1], topo, visited);
+        list_add(topo, variable);
+    }
+}
+
 void variable_first_backward(variable* variable) {
+    list* topo = list_initialize(sizeof(void*));
+    set* visited = set_initialize();
+    variable_build_topo(variable, topo, visited);
+
     variable->grad = 1;
-    variable_backward(variable);
+    for (int i = topo->count - 1; i >= 0; i--) {
+        variable_backward(list_get(topo, i));
+    }
+
+    list_free(topo);
+    set_free(visited);
 }
 
 void variable_backward(variable* variable) {
@@ -39,6 +63,17 @@ variable* variable_add(char* name, variable* a, variable* b) {
 variable* variable_exp(char* name, variable* a, variable* b) {
     variable* result = variable_initialize(name, powf(a->value, b->value), a, b, EXP);
     grad_function* grad_function = grad_function_initialize(a, b, result, EXP);
+    result->grad_function = grad_function;
+    return result;
+}
+
+variable* variable_relu(char* name, variable* a) {
+    float result_value = 0;
+    if (a->value > 0) {
+        result_value = a->value;
+    }
+    variable* result = variable_initialize(name, result_value, a, NULL, RELU);
+    grad_function* grad_function = grad_function_initialize(a, NULL, result, RELU);
     result->grad_function = grad_function;
     return result;
 }
