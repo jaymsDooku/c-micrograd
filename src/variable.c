@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 void variable_first_backward(variable* variable) {
     variable->grad = 1;
@@ -31,6 +32,13 @@ variable* variable_mul(char* name, variable* a, variable* b) {
 variable* variable_add(char* name, variable* a, variable* b) {
     variable* result = variable_initialize(name, a->value + b->value, a, b, ADD);
     grad_function* grad_function = grad_function_initialize(a, b, result, ADD);
+    result->grad_function = grad_function;
+    return result;
+}
+
+variable* variable_exp(char* name, variable* a, variable* b) {
+    variable* result = variable_initialize(name, powf(a->value, b->value), a, b, EXP);
+    grad_function* grad_function = grad_function_initialize(a, b, result, EXP);
     result->grad_function = grad_function;
     return result;
 }

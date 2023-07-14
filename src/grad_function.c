@@ -5,26 +5,48 @@
 #include "grad_function.h"
 
 #include <stdlib.h>
+#include <math.h>
+
+void grad_add(grad_function* grad_function) {
+    grad_function->operand1->grad += grad_function->result->grad;
+    grad_function->operand2->grad += grad_function->result->grad;
+
+    variable_backward(grad_function->operand1);
+    variable_backward(grad_function->operand2);
+}
+
+void grad_mul(grad_function* grad_function) {
+    float result_grad = grad_function->result->grad;
+    float value1 = grad_function->operand1->value;
+    float value2 = grad_function->operand2->value;
+
+    grad_function->operand1->grad += value2 * result_grad;
+    grad_function->operand2->grad += value1 * result_grad;
+
+    variable_backward(grad_function->operand1);
+    variable_backward(grad_function->operand2);
+}
+void grad_exp(grad_function* grad_function) {
+    float result_grad = grad_function->result->grad;
+    float value1 = grad_function->operand1->value;
+    float value2 = grad_function->operand2->value;
+    grad_function->operand1->grad += value2 * (powf(value1, value2-1)) * result_grad;
+    grad_function->operand2->grad += powf(value2, value1) * logf(value1) * result_grad;
+
+    variable_backward(grad_function->operand1);
+    variable_backward(grad_function->operand2);
+}
 
 void grad_function_compute(grad_function* grad_function) {
-    float result_grad = grad_function->result->grad;
-    float operand1_value = grad_function->operand1->value;
-    float operand2_value = grad_function->operand2->value;
     switch (grad_function->operation) {
         case ADD:
-            grad_function->operand1->grad += result_grad;
-            grad_function->operand2->grad += result_grad;
-
-            variable_backward(grad_function->operand1);
-            variable_backward(grad_function->operand2);
+            grad_add(grad_function);
             break;
         case MUL:
-            grad_function->operand1->grad += operand2_value * result_grad;
-            grad_function->operand2->grad += operand1_value * result_grad;
-
-            variable_backward(grad_function->operand1);
-            variable_backward(grad_function->operand2);
+            grad_mul(grad_function);
             break;
+        case EXP:
+            grad_exp(grad_function);
         case NOP:
             break;
     }

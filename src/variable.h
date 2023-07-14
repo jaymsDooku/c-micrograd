@@ -6,9 +6,10 @@
 #define C_MICROGRAD_VARIABLE_H
 
 #define FOREACH_OP(OP) \
-        OP(ADD)   \
-        OP(MUL)   \
-        OP(NOP)   \
+    OP(ADD) \
+    OP(MUL) \
+    OP(NOP) \
+    OP(EXP) \
 
 #define GENERATE_ENUM(ENUM) ENUM,
 #define GENERATE_STRING(STRING) #STRING,
@@ -39,6 +40,7 @@ void variable_first_backward(variable* variable);
 void variable_backward(variable* variable);
 variable* variable_mul(char* name, variable* a, variable* b);
 variable* variable_add(char* name, variable* a, variable* b);
+variable* variable_exp(char* name, variable* a, variable* b);
 void variable_print(variable* variable);
 variable* variable_initialize_fresh(char* name, float value);
 variable* variable_initialize(char* name, float value, variable* a, variable* b, OP_ENUM op);
