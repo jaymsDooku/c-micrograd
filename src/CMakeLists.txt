@@ -1,2 +1,2 @@
-add_executable(${PROJECT_NAME} variable.h variable.c grad_function.h grad_function.c data_structures/list.h data_structures/list.c data_structures/set.h data_structures/set.c)
+add_executable(${PROJECT_NAME} variable.h variable.c grad_function.h grad_function.c data_structures/list.h data_structures/list.c data_structures/set.h data_structures/set.c neuron.h neuron.c layer.h math_util.h math_util.c layer.c mlp.h dataset.h dataset.c bitmap/bitmap.h)
 target_sources(${PROJECT_NAME} PRIVATE main.c)
