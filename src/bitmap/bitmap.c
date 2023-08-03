@@ -7,6 +7,91 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void circle_midpoint_algorithm(bitmap* bitmap, point p, int radius, color color) {
+    int x = radius, y = 0;
+
+    bitmap_set(bitmap, p, color);
+
+    if (radius > 0) {
+        point p1 = {p.x + x, p.y - y};
+        point p2 = {p.x + y, p.y + x};
+        point p3 = {p.x - y, p.y + x};
+        bitmap_set(bitmap, p1, color);
+        bitmap_set(bitmap, p2, color);
+        bitmap_set(bitmap, p3, color);
+    }
+
+    int P = 1 - radius;
+    while (x > y) {
+        y++;
+
+        if (P <= 0) {
+            P = P + 2*y + 1;
+        } else {
+            x--;
+            P = P + 2*y - 2*x + 1;
+        }
+
+        if (x < y) {
+            break;
+        }
+
+        point p1 = {p.x + x, p.y + y};
+        point p2 = {p.x - x, p.y + y};
+        point p3 = {p.x + x, p.y - y};
+        point p4 = {p.x - x, p.y - y};
+        bitmap_set(bitmap, p1, color);
+        bitmap_set(bitmap, p2, color);
+        bitmap_set(bitmap, p3, color);
+        bitmap_set(bitmap, p4, color);
+
+        if (x != y) {
+            point p5 = {p.x + y, p.y + x};
+            point p6 = {p.x - y, p.y + x};
+            point p7 = {p.x + y, p.y - x};
+            point p8 = {p.x - y, p.y - x};
+            bitmap_set(bitmap, p5, color);
+            bitmap_set(bitmap, p6, color);
+            bitmap_set(bitmap, p7, color);
+            bitmap_set(bitmap, p8, color);
+        }
+    }
+}
+
+void circle_brute_force_algorithm(bitmap* bitmap, point p, int radius, color color) {
+    for (int y = -radius; y <= radius; y++) {
+        for (int x = -radius; x <= radius; x++) {
+            if (x*x + y*y <= radius*radius) {
+                point p1 = {p.x + x, p.y + y};
+                bitmap_set(bitmap, p1, color);
+            }
+        }
+    }
+}
+
+void bitmap_rectangle(bitmap* bitmap, point p1, point p2, color color) {
+
+}
+
+void bitmap_circle(bitmap* bitmap, point p, int radius, color color) {
+    //circle_midpoint_algorithm(bitmap, p, radius, color);
+    circle_brute_force_algorithm(bitmap, p, radius, color);
+}
+
+void bitmap_set(bitmap* bitmap, point p, color color) {
+    int x = p.x;
+    int y = p.y;
+    int width = bitmap->width;
+    int height = bitmap->height;
+    int index = (y * width + x) * 3;
+    if (index < 0 || index > (bitmap->image_size - 3)) {
+        return;
+    }
+    bitmap->image[index + 2] = (unsigned char) color.r;
+    bitmap->image[index + 1] = (unsigned char) color.g;
+    bitmap->image[index] = (unsigned char) color.b;
+}
+
 const int BYTES_PER_PIXEL = 3; /// red, green, & blue
 const int FILE_HEADER_SIZE = 14;
 const int INFO_HEADER_SIZE = 40;

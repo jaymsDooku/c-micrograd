@@ -1,16 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "variable.h"
 #include "neuron.h"
 #include "math_util.h"
 #include "layer.h"
 #include "bitmap/bitmap.h"
+#include "dataset.h"
+
+
 
 int main() {
-    int height = 361;
-    int width = 867;
-    bitmap* bitmap = bitmap_initialize(867, 361);
+    int height = 600;
+    int width = 600;
+    bitmap* bitmap = bitmap_initialize(width, height);
 
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
@@ -21,8 +25,54 @@ int main() {
         }
     }
 
+    color red = {255, 87, 51};
+    color blue = {51, 219, 255};
+
+    int count = 100;
+    //dataset* dataset = dataset_random(count, 2);
+    dataset* dataset = dataset_make_moons(count);
+
+    variable* minx = dataset_min(dataset, 0);
+    variable* miny = dataset_min(dataset, 1);
+
+    printf("min (%f, %f)\n", minx->value, miny->value);
+
+    variable* maxx = dataset_max(dataset, 0);
+    variable* maxy = dataset_max(dataset, 1);
+
+    printf("max (%f, %f)\n", maxx->value, maxy->value);
+
+    float x_diff = maxx->value - minx->value;
+    float y_diff = maxy->value - miny->value;
+
+    printf("%d", maxy->value > miny->value);
+
+    for (int i = 0; i < count; i++) {
+        variable** data_point = dataset->X[i];
+        variable* x = data_point[0];
+        variable* y = data_point[1];
+
+        int px = (x->value + 1) * (width / x_diff);
+        int py = (y->value + 0.5) * (height / y_diff);
+
+        //px += (width / 2);
+        //py += (height / 2);
+
+        point p = {px, py};
+
+        int class = dataset->y[i];
+        if (class) {
+            bitmap_circle(bitmap, p, 3, red);
+        } else {
+            bitmap_circle(bitmap, p, 3, blue);
+        }
+    }
+
     bitmap_save(bitmap, "test.bmp");
     printf("file generated");
+
+    dataset_free(dataset);
+    bitmap_free(bitmap);
 }
 
 //int main() {

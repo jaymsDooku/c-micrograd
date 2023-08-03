@@ -35,3 +35,11 @@ RELU
 y = max(0, a)
 
 dy/da = (y > 0) ? 1 : 0
+
+
+Midpoint Circle Algorithm
+-----------------
+F(p) = x^2 + y^2 - r^2
+if F(p) < 0, p is in circle
+F(p) = 0, p is on perimeter
+F(p) > 0, p is outside circle

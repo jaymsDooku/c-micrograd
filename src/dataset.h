@@ -16,6 +16,10 @@ typedef struct {
     int count;
 } dataset;
 
+variable* dataset_min(dataset* dataset, int input_index);
+variable* dataset_max(dataset* dataset, int input_index);
+
+dataset* dataset_make_moons(int count);
 dataset* dataset_random(int count, int input_length);
 dataset* dataset_initialize(variable*** X, int* y, int count, int input_length);
 void dataset_free(dataset* dataset);

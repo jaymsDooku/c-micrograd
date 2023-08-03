@@ -23,8 +23,12 @@ typedef struct {
     int height;
 } bitmap;
 
+void circle_midpoint_algorithm(bitmap* bitmap, point p, int radius, color color);
+void circle_brute_force_algorithm(bitmap* bitmap, point p, int radius, color color);
+
 void bitmap_rectangle(bitmap* bitmap, point p1, point p2, color color);
 void bitmap_circle(bitmap* bitmap, point p, int radius, color color);
+void bitmap_set(bitmap* bitmap, point p, color color);
 
 unsigned char* bitmap_file_header(bitmap* bitmap, int stride);
 unsigned char* bitmap_info_header(bitmap* bitmap);
