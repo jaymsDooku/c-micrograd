@@ -105,6 +105,18 @@ variable* variable_initialize(char* name, float value, variable* a, variable* b,
     return result;
 }
 
+variable* variable_copy(variable* to_copy) {
+    variable* copied = malloc(sizeof(variable));
+    copied->name = to_copy->name;
+    copied->value = to_copy->value;
+    copied->grad = to_copy->grad;
+    copied->children[0] = to_copy->children[0];
+    copied->children[1] = to_copy->children[1];
+    copied->op = to_copy->op;
+    copied->grad_function = to_copy->grad_function;
+    return copied;
+}
+
 void variable_free(variable* variable) {
     if (variable->grad_function != NULL) {
         grad_function_free(variable->grad_function);

@@ -52,6 +52,7 @@ variable* variable_relu(char* name, variable* a);
 void variable_print(variable* variable);
 variable* variable_initialize_fresh(char* name, float value);
 variable* variable_initialize(char* name, float value, variable* a, variable* b, OP_ENUM op);
+variable* variable_copy(variable* to_copy);
 void variable_free(variable* variable);
 
 #endif //C_MICROGRAD_VARIABLE_H

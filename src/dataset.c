@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 #include "math_util.h"
@@ -33,7 +34,7 @@ variable* dataset_max(dataset* dataset, int input_index) {
     return result;
 }
 
-dataset* dataset_make_moons(int count) {
+dataset* dataset_make_moons(int count, float noise) {
     int input_length = 2;
     variable*** X = malloc(count * sizeof(variable**));
     int* y = malloc(count * sizeof(int));
@@ -50,8 +51,8 @@ dataset* dataset_make_moons(int count) {
 
     for (int i = 0; i < count / 2; i++) {
         variable** x = malloc(input_length * sizeof(variable*));
-        x[0] = variable_initialize_fresh("x", cosf(x_start));
-        x[1] = variable_initialize_fresh("y", sinf(y_start));
+        x[0] = variable_initialize_fresh("x", (cosf(x_start)) + randf(-noise, noise));
+        x[1] = variable_initialize_fresh("y", (sinf(y_start)) + randf(-noise, noise));
         x_start += x_step;
         y_start += y_step;
 
@@ -64,8 +65,8 @@ dataset* dataset_make_moons(int count) {
 
     for (int i = count / 2; i < count; i++) {
         variable** x = malloc(input_length * sizeof(variable*));
-        x[0] = variable_initialize_fresh("x", 1.f - cosf(x_start));
-        x[1] = variable_initialize_fresh("y", 1.f - sinf(y_start) - 0.5f);
+        x[0] = variable_initialize_fresh("x", (1.f - cosf(x_start)) + randf(-noise, noise));
+        x[1] = variable_initialize_fresh("y", (1.f - sinf(y_start) - 0.5f) + randf(-noise, noise));
         x_start += x_step;
         y_start += y_step;
 
@@ -90,7 +91,7 @@ dataset* dataset_random(int count, int input_length) {
         }
         X[i] = x;
 
-        float y_val = randf(0, 1);
+        float y_val = randf(0.f, 1.f);
         if (y_val > 0.5) {
             y[i] = 1;
         } else {

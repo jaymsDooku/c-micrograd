@@ -8,8 +8,29 @@
 #include "layer.h"
 #include "bitmap/bitmap.h"
 #include "dataset.h"
+#include "mlp.h"
 
 
+//int main() {
+//    int count = 100;
+//    dataset* moons_dataset = dataset_make_moons(count, 0.1f);
+//    variable*** X = moons_dataset->X;
+//
+//    layer* layer = layer_initialize(2, 16, false);
+////    for (int i = 0; i < moons_dataset->count; i++) {
+//    variable** inputs = X[0];
+//    variable** layer_act = layer_activate(layer, inputs);
+//    for (int j = 0; j < 16; j++) {
+//        variable_print(layer_act[j]);
+//        variable_free(layer_act[j]);
+//    }
+//    free(layer_act);
+////    }
+//
+//    layer_free(layer);
+//    dataset_free(moons_dataset);
+//    return 0;
+//}
 
 int main() {
     int height = 600;
@@ -30,25 +51,40 @@ int main() {
 
     int count = 100;
     //dataset* dataset = dataset_random(count, 2);
-    dataset* dataset = dataset_make_moons(count);
+    dataset* moons_dataset = dataset_make_moons(count, 0.1f);
 
-    variable* minx = dataset_min(dataset, 0);
-    variable* miny = dataset_min(dataset, 1);
+    int layer_outputs[3] = {16, 16, 1};
+    mlp* mlp = mlp_initialize(2, layer_outputs, 3);
+    printf("mlp initialized\n");
+    mlp_print(mlp);
+
+    mlp_result* results = mlp_activate(mlp, moons_dataset);
+    printf("mlp activated\n");
+
+    dataset* final_result = results->final_result;
+    variable*** final_X = final_result->X;
+    float* final_values = results->final_values;
+    printf("final_output count: %d\n", final_result->count);
+    printf("final_output length: %d\n", final_result->input_length);
+
+    variable* minx = dataset_min(final_result, 0);
+    variable* miny = dataset_min(final_result, 1);
 
     printf("min (%f, %f)\n", minx->value, miny->value);
 
-    variable* maxx = dataset_max(dataset, 0);
-    variable* maxy = dataset_max(dataset, 1);
+    variable* maxx = dataset_max(final_result, 0);
+    variable* maxy = dataset_max(final_result, 1);
 
     printf("max (%f, %f)\n", maxx->value, maxy->value);
 
     float x_diff = maxx->value - minx->value;
     float y_diff = maxy->value - miny->value;
 
-    printf("%d", maxy->value > miny->value);
+    printf("%d\n", maxy->value > miny->value);
 
+    variable** losses = malloc(count * sizeof(variable*));
     for (int i = 0; i < count; i++) {
-        variable** data_point = dataset->X[i];
+        variable** data_point = final_result->X[i];
         variable* x = data_point[0];
         variable* y = data_point[1];
 
@@ -60,19 +96,61 @@ int main() {
 
         point p = {px, py};
 
-        int class = dataset->y[i];
-        if (class) {
+        int class = final_result->y[i];
+        if (class > 0) {
             bitmap_circle(bitmap, p, 3, red);
         } else {
             bitmap_circle(bitmap, p, 3, blue);
         }
+
+        variable* v_y = variable_initialize_fresh("v_y", -moons_dataset->y[i]);
+        variable* score = variable_initialize_fresh("score", results->final_values[i]);
+        variable* loss_score = variable_mul("loss_score", score, v_y);
+        variable* one = variable_initialize_fresh("one", 1.f);
+        variable* loss = variable_add("loss_sum",
+                                       one,
+                                       loss_score);
+        variable_free(v_y);
+        variable_free(score);
+        variable_free(loss_score);
+        variable_free(one);
+        losses[i] = loss;
     }
 
-    bitmap_save(bitmap, "test.bmp");
-    printf("file generated");
+    variable* data_loss = variable_initialize_fresh("data_loss", 0);
+    for (int i = 0; i < count; i++) {
+        variable* temp_data_loss = data_loss;
+        variable* loss = losses[i];
+        data_loss = variable_add("data_loss", data_loss, loss);
+        if (i < count - 1) {
+            variable_free(temp_data_loss);
+        }
+    }
 
-    dataset_free(dataset);
+    printf("data_loss:\n");
+    variable_print(data_loss);
+
+    int correct = 0;
+    for (int i = 0; i < count; i++) {
+        int class = final_result->y[i];
+        int true_class = moons_dataset->y[i];
+        correct += (class == true_class);
+    }
+    float accuracy = (float) correct / count;
+    printf("accuracy: %f\n", accuracy);
+
+    variable_first_backward(data_loss);
+    variable_print(data_loss);
+
+    bitmap_save(bitmap, "test.bmp");
+    printf("file generated\n");
+
+    mlp_result_free(results);
+
+    dataset_free(moons_dataset);
     bitmap_free(bitmap);
+    mlp_free(mlp);
+    return 0;
 }
 
 //int main() {
